@@ -263,14 +263,14 @@ document.getElementById('toggle-to-register').onclick = () => { document.getElem
 document.getElementById('toggle-to-login').onclick = () => { document.getElementById('register-form').style.display = 'none'; document.getElementById('login-form').style.display = 'block'; };
 
 document.getElementById('btn-login-submit').onclick = async () => {
-  const res = await fetch('https://thin-tables-nail.loca.lt/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: document.getElementById('login-username').value, password: document.getElementById('login-password').value }) });
+  const res = await fetch('https://1e186b9813a1487b-76-32-51-47.serveousercontent.com/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: document.getElementById('login-username').value, password: document.getElementById('login-password').value }) });
   const data = await res.json();
   if (res.ok) { token = data.token; username = data.username; localStorage.setItem('jwt_token', token); connectWebSocket(); }
   else document.getElementById('auth-error-msg').textContent = data.error;
 };
 
 document.getElementById('btn-register-submit').onclick = async () => {
-  const res = await fetch('https://thin-tables-nail.loca.lt/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: document.getElementById('reg-username').value, password: document.getElementById('reg-password').value, charClass: document.getElementById('reg-class').value }) });
+  const res = await fetch('https://1e186b9813a1487b-76-32-51-47.serveousercontent.com/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: document.getElementById('reg-username').value, password: document.getElementById('reg-password').value, charClass: document.getElementById('reg-class').value }) });
   const data = await res.json();
   if (res.ok) { token = data.token; username = data.username; localStorage.setItem('jwt_token', token); connectWebSocket(); }
   else document.getElementById('auth-error-msg').textContent = data.error;
@@ -284,7 +284,7 @@ document.getElementById('btn-disconnect').onclick = () => {
 
 function connectWebSocket() {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  ws = new WebSocket(`wss://thin-tables-nail.loca.lt`);
+  ws = new WebSocket(`wss://1e186b9813a1487b-76-32-51-47.serveousercontent.com`);
   ws.onopen = () => ws.send(JSON.stringify({ type: 'auth', token }));
   ws.onmessage = (event) => {
     const msg = JSON.parse(event.data);
