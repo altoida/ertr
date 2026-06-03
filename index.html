@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>The Legend Of the Clockworked Tower</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- LOADING & AUTH SCREEN -->
+  <div id="auth-screen">
+    <div class="auth-card">
+      <h1 class="game-title">The Legend Of The<br>Clockworked Tower</h1>
+      <div id="login-form">
+        <div class="input-group">
+          <label>Username</label>
+          <input type="text" id="login-username" placeholder="Username..." autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="Password...">
+        </div>
+        <button class="btn-primary" id="btn-login-submit">Login</button>
+        <div class="auth-toggle">Need account? <span id="toggle-to-register">Register</span></div>
+      </div>
+      <div id="register-form" style="display: none;">
+        <div class="input-group">
+          <label>Username</label>
+          <input type="text" id="reg-username" placeholder="Username..." autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" id="reg-password" placeholder="Password...">
+        </div>
+        <div class="input-group">
+          <label>Hero Class</label>
+          <select id="reg-class">
+            <option value="swordsman">Swordsman (Parry Tank)</option>
+            <option value="archer">Archer (Speed DPS)</option>
+            <option value="mage">Mage (Mana Spells)</option>
+            <option value="healer">Healer (Regen Support)</option>
+          </select>
+        </div>
+        <button class="btn-primary" id="btn-register-submit">Register</button>
+        <div class="auth-toggle">Have account? <span id="toggle-to-login">Login</span></div>
+      </div>
+      <div id="auth-error-msg"></div>
+    </div>
+  </div>
+
+  <!-- MAIN GAME INTERFACE -->
+  <div id="game-container">
+    <header>
+      <div class="header-logo">The Clockworked Tower</div>
+      <div class="header-stats">
+        <div class="header-stat" style="color: var(--cyan);"><span>Gears:</span> <span id="header-gears">0</span></div>
+        <div class="header-stat"><span>Gold:</span> <span class="gold-count" id="header-gold">0</span></div>
+        <button class="btn-action" id="btn-disconnect">Logout</button>
+      </div>
+    </header>
+
+    <!-- Hero Sheet Sidebar -->
+    <div class="left-sidebar">
+      <!-- Mini stats strip -->
+      <div class="section-title">⚔ Character</div>
+      <div class="player-card">
+        <div class="player-card-header">
+          <span class="player-name" id="hud-username">Hero</span>
+          <span class="player-class" id="hud-class">Class</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#a39ca9;margin-bottom:3px;">
+          <span id="hud-level" style="color:var(--gold);font-family:var(--font-title);font-size:0.5rem;">LV 1</span>
+          <span id="hud-xp">XP: 0/150</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.9rem;color:#a39ca9;">
+          <span>HP</span><span id="hp-ratio">100/100</span>
+        </div>
+        <div class="bar"><div class="bar-fill bar-hp" id="hp-bar-fill"></div></div>
+        <div id="mana-container" style="display:none;">
+          <div style="display:flex;justify-content:space-between;font-size:0.9rem;color:#00f0ff;margin-top:4px;">
+            <span>MP</span><span id="mp-ratio">100/100</span>
+          </div>
+          <div class="bar" style="border-color:#005f73;"><div class="bar-fill" id="mp-bar-fill" style="background:#00f0ff;"></div></div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-row"><span>ATK</span><span class="stat-val" id="stat-atk">0</span></div>
+          <div class="stat-row"><span>DEF</span><span class="stat-val" id="stat-def">0</span></div>
+          <div class="stat-row"><span>MAG</span><span class="stat-val" id="stat-heal">0</span></div>
+          <div class="stat-row"><span>FL</span><span class="stat-val" id="stat-maxfloor">1</span></div>
+        </div>
+      </div>
+      <!-- Quest log at bottom -->
+      <div class="section-title" style="margin:8px 0 5px;">📋 Quests</div>
+      <div id="quest-list" style="font-size:0.95rem;overflow-y:auto;max-height:100px;"></div>
+    </div>
+
+    <!-- INVENTORY MODAL (Hidden by default) -->
+    <div id="inventory-modal" style="display:none;">
+      <div class="modal-header">
+        <div class="modal-title">Inventory</div>
+        <button id="btn-close-inventory" class="btn-close-modal">X</button>
+      </div>
+      <div class="char-panel">
+        <!-- Equipment Doll (3×4 grid representing body slots) -->
+        <div class="section-title" style="margin:0 0 5px;">⚙ Equipment</div>
+        <div class="equip-doll" id="equip-doll">
+          <!-- Row 1: [empty] [head] [empty] -->
+          <div class="equip-slot empty-center"></div>
+          <div class="equip-slot" id="eslot-head" data-slot="head" title="Helmet">
+            <span class="slot-label">HEAD</span>
+          </div>
+          <div class="equip-slot empty-center"></div>
+          <!-- Row 2: [weapon] [chest] [accessory] -->
+          <div class="equip-slot" id="eslot-weapon" data-slot="weapon" title="Weapon">
+            <span class="slot-label">WEAP</span>
+          </div>
+          <div class="equip-slot" id="eslot-armor" data-slot="armor" title="Chest Armour">
+            <span class="slot-label">BODY</span>
+          </div>
+          <div class="equip-slot" id="eslot-accessory" data-slot="accessory" title="Accessory">
+            <span class="slot-label">ACC</span>
+          </div>
+          <!-- Row 3: [empty] [legs] [empty] -->
+          <div class="equip-slot empty-center"></div>
+          <div class="equip-slot" id="eslot-legs" data-slot="legs" title="Legs">
+            <span class="slot-label">LEGS</span>
+          </div>
+          <div class="equip-slot empty-center"></div>
+          <!-- Row 4: [empty] [boots] [empty] -->
+          <div class="equip-slot empty-center"></div>
+          <div class="equip-slot" id="eslot-boots" data-slot="boots" title="Boots">
+            <span class="slot-label">BOOT</span>
+          </div>
+          <div class="equip-slot empty-center"></div>
+        </div>
+
+        <!-- Potion quick-slots -->
+        <div class="potion-row">
+          <div class="potion-slot hp-pot" id="pot-hp" title="Health Potion (Q)" onclick="usePotion('hp')">
+            ❤️<span class="pot-count" id="pot-hp-count">0</span>
+          </div>
+          <div class="potion-slot mp-pot" id="pot-mp" title="Mana Potion (R)" onclick="usePotion('mp')">
+            💧<span class="pot-count" id="pot-mp-count">0</span>
+          </div>
+        </div>
+
+        <!-- Inventory Grid -->
+        <div class="section-title" style="margin:8px 0 5px;">🎒 Bag</div>
+        <div class="inv-grid-outer">
+          <div class="inv-filter-row">
+            <button class="inv-filter-btn active" data-tab="all">ALL</button>
+            <button class="inv-filter-btn" data-tab="weapon">WEAP</button>
+            <button class="inv-filter-btn" data-tab="armor">ARMR</button>
+            <button class="inv-filter-btn" data-tab="accessory">ACC</button>
+          </div>
+          <div class="inv-grid" id="inventory-grid"></div>
+
+          <!-- Item detail / action popup -->
+          <div class="item-detail-popup" id="item-details">
+            <div class="det-name" id="det-name">—</div>
+            <div class="det-rarity" id="det-rarity"></div>
+            <div class="det-stats-line" id="det-stats"></div>
+            <div class="det-dur" id="det-durability"></div>
+            <div class="det-actions">
+              <button class="btn-equip" id="btn-equip-item">Equip</button>
+              <button class="btn-unequip" id="btn-unequip-item" style="display:none;">Unequip</button>
+            </div>
+          </div>
+        </div>
+    </div>
+
+
+    <!-- Central Viewport -->
+    <div class="center-area" id="arena-panel">
+      <!-- Damage numbers and combat events shown as world-space floating text on canvas -->
+
+      <canvas id="combat-canvas"></canvas>
+
+      <div class="hud-bottom-overlay">
+        <button class="btn-action btn-open-market" id="btn-open-market-trigger" style="display:none;">Setup Sell Stand</button>
+      </div>
+
+      <div class="game-controls-overlay">
+        <!-- INVENTORY BUTTON -->
+        <button id="btn-toggle-inventory" title="Inventory (I)">
+          <svg viewBox="0 0 16 16" width="32" height="32">
+            <rect x="3" y="5" width="10" height="9" fill="#8d5c23"/>
+            <rect x="5" y="3" width="6" height="2" fill="#5c3a21"/>
+            <rect x="4" y="6" width="8" height="2" fill="#dfb257"/>
+          </svg>
+        </button>
+        <div id="parry-hint">⚡ [E] PARRY NOW!</div>
+        <div class="skill-bar" id="skills-swordsman" style="display: none;">
+          <button class="skill-btn" data-skill="slash" disabled><div class="skill-tooltip">Slash [1]</div></button>
+          <button class="skill-btn" data-skill="taunt" disabled><div class="skill-tooltip">Taunt [2]</div></button>
+        </div>
+        <div class="skill-bar" id="skills-archer" style="display: none;">
+          <button class="skill-btn" data-skill="double_shot" disabled><div class="skill-tooltip">Power Shot [1]</div></button>
+        </div>
+        <div class="skill-bar" id="skills-mage" style="display: none;">
+          <button class="skill-btn" data-skill="arcane_bolt" disabled><div class="skill-tooltip">Arcane Bolt [1] (10 MP)</div></button>
+          <button class="skill-btn" data-skill="fireball" disabled><div class="skill-tooltip">Fireball [2] (25 MP)</div></button>
+          <button class="skill-btn" data-skill="lightning" disabled><div class="skill-tooltip">Lightning [3] (35 MP)</div></button>
+        </div>
+        <div class="skill-bar" id="skills-healer" style="display: none;">
+          <button class="skill-btn" data-skill="heal" disabled><div class="skill-tooltip">Mend [1]</div></button>
+        </div>
+      </div>
+
+      <!-- ===== MOBILE CONTROLS ===== -->
+      <div id="mobile-controls" style="display:none;">
+        <!-- Left side: Virtual Thumbstick -->
+        <div id="joystick-zone">
+          <div id="joystick-base">
+            <div id="joystick-knob"></div>
+          </div>
+        </div>
+
+        <!-- Right side: Action buttons -->
+        <div id="mobile-btn-zone">
+          <!-- Parry button — only shown when enemy telegraphs a heavy attack -->
+          <button id="mobile-parry-btn" class="mobile-action-btn parry-btn" style="display:none;">&#x26A1;<br><span>PARRY</span></button>
+          <!-- Slash button -->
+          <button id="mobile-slash-btn" class="mobile-action-btn slash-btn">&#x2694;<br><span>SLASH</span></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- INTERACTIVE MODALS -->
+
+  <!-- NPC: Forge Master -->
+  <div class="game-modal" id="modal-forge">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('modal-forge')">[X]</span>
+      <div class="cutscene-header">
+        <div class="npc-art" id="art-forge"></div>
+        <div class="npc-dialogue">
+          <div class="npc-name">Grom the Forge Master</div>
+          <div class="npc-quote" id="quote-forge">"The flames of the old world still burn in my hearth."</div>
+        </div>
+      </div>
+      <div class="section-title">Upgrade Permanent Stats</div>
+      <div class="shop-list" style="margin-bottom: 20px;">
+        <div class="shop-item-card"><span>Max HP</span><button class="btn-upgrade btn-action" data-stat="hp">Cost: 35G</button></div>
+        <div class="shop-item-card"><span>Attack Power</span><button class="btn-upgrade btn-action" data-stat="atk">Cost: 35G</button></div>
+        <div class="shop-item-card"><span>Defense</span><button class="btn-upgrade btn-action" data-stat="def">Cost: 35G</button></div>
+        <div class="shop-item-card"><span>Magic/Heal</span><button class="btn-upgrade btn-action" data-stat="healing">Cost: 35G</button></div>
+      </div>
+      <div class="section-title">Repair Equipment</div>
+      <div id="repair-item-info" class="pawn-box" style="display:none;">
+        <span id="repair-item-name">Sword</span>
+        <button class="btn-action" id="btn-repair-execute" style="background: var(--green);">Repair</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NPC: Merchant -->
+  <div class="game-modal" id="modal-merchant">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('modal-merchant')">[X]</span>
+      <div class="cutscene-header">
+        <div class="npc-art" id="art-merchant"></div>
+        <div class="npc-dialogue">
+          <div class="npc-name">Sylas the Merchant</div>
+          <div class="npc-quote" id="quote-merchant">"Treasures from the lower floors, very affordable!"</div>
+        </div>
+      </div>
+      <div class="section-title">Buy Base Gear (25 Gold)</div>
+      <div class="shop-grid">
+        <div class="shop-visual-card" onclick="ws.send(JSON.stringify({type:'buy_merchant_item', itemType:'weapon'}))">
+          <div class="shop-visual-icon"><svg viewBox="0 0 16 16" width="100%" height="100%"><path d="M12 1h3v3h-3zm-2 2h3v3h-3zm-2 2h3v3H8zm-2 2h3v3H6zm-2 2h3v3H4zm-2 2h2v2H2zm-1 2h2v1H1zm0-2h1v1H1z" fill="#dfb257"/><path d="M2 14h2v2H2z" fill="#8d5c23"/></svg></div>
+          <div class="shop-visual-name">Random Weapon</div>
+          <div class="shop-visual-price">25G</div>
+        </div>
+        <div class="shop-visual-card" onclick="ws.send(JSON.stringify({type:'buy_merchant_item', itemType:'armor'}))">
+          <div class="shop-visual-icon"><svg viewBox="0 0 16 16" width="100%" height="100%"><path d="M2 2h12v4c0 4-3 7-6 8-3-1-6-4-6-8z" fill="#8e9eab"/><path d="M4 4h8v2H4z" fill="#58636d"/></svg></div>
+          <div class="shop-visual-name">Random Armor</div>
+          <div class="shop-visual-price">25G</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NPC: Pawn Shop -->
+  <div class="game-modal" id="modal-pawn">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('modal-pawn')">[X]</span>
+      <div class="cutscene-header">
+        <div class="npc-art" id="art-pawn"></div>
+        <div class="npc-dialogue">
+          <div class="npc-name">Greedy Gob</div>
+          <div class="npc-quote" id="quote-pawn">"I'll take your scraps. Don't expect full price."</div>
+        </div>
+      </div>
+      <div class="section-title">Sell Inventory Item</div>
+      <div id="pawn-item-info" class="pawn-box" style="display:none;">
+        <span id="pawn-item-name">Sword</span>
+        <button class="btn-action" id="btn-pawn-execute" style="background: var(--red);">Sell</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NPC: Blacksmith -->
+  <div class="game-modal" id="modal-blacksmith">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('modal-blacksmith')">[X]</span>
+      <div class="cutscene-header">
+        <div class="npc-art" id="art-blacksmith"></div>
+        <div class="npc-dialogue">
+          <div class="npc-name">Kaelen the Blacksmith</div>
+          <div class="npc-quote" id="quote-blacksmith">"Forged weapons that scale with your level."</div>
+        </div>
+      </div>
+      <div class="shop-grid">
+        <div class="shop-visual-card" id="btn-buy-blacksmith">
+          <div class="shop-visual-icon"><svg viewBox="0 0 16 16" width="100%" height="100%"><path d="M12 1h3v3h-3zm-2 2h3v3h-3zm-2 2h3v3H8zm-2 2h3v3H6zm-2 2h3v3H4zm-2 2h2v2H2zm-1 2h2v1H1zm0-2h1v1H1z" fill="#2ecc71"/><path d="M2 14h2v2H2z" fill="#8d5c23"/></svg></div>
+          <div class="shop-visual-name">Uncommon Weapon</div>
+          <div class="shop-visual-price">Lvl x 10G</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NPC: Relic Dealer -->
+  <div class="game-modal" id="modal-relics">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('modal-relics')">[X]</span>
+      <div class="cutscene-header">
+        <div class="npc-art" id="art-relics"></div>
+        <div class="npc-dialogue">
+          <div class="npc-name">Madame Oculi</div>
+          <div class="npc-quote" id="quote-relics">"Rare trinkets for those who brave the high floors."</div>
+        </div>
+      </div>
+      <div style="font-size:1rem; color:var(--red);">Requires reaching Floor 20.</div>
+      <div class="shop-grid">
+        <div class="shop-visual-card" id="btn-buy-relic">
+          <div class="shop-visual-icon"><svg viewBox="0 0 16 16" width="100%" height="100%"><path d="M5 5h6v6H5z" fill="#00f0ff"/><path d="M7 7h2v2H7z" fill="#fff"/><path d="M4 4h1v1H4zm7 0h1v1h-1zm0 7h1v1h-1zm-7 0h1v1H4z" fill="#00f0ff"/></svg></div>
+          <div class="shop-visual-name">Rare Accessory</div>
+          <div class="shop-visual-price">Lvl x 25G</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NPC: Amulet Tinker -->
+  <div class="game-modal" id="modal-tinker">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('modal-tinker')">[X]</span>
+      <div class="cutscene-header">
+        <div class="npc-art" id="art-tinker"></div>
+        <div class="npc-dialogue">
+          <div class="npc-name">Tinker Bob</div>
+          <div class="npc-quote" id="quote-tinker">"Bring me 15 clockwork gears, and I'll craft you an amulet!"</div>
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 20px;">
+        <button class="btn-primary" id="btn-craft-amulet-execute">Craft Accessory Amulet (Cost: 15 Gears)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NPC: Potion Vendor -->
+  <div class="game-modal" id="modal-potions">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('modal-potions')">[X]</span>
+      <div class="cutscene-header">
+        <div class="npc-art" id="art-potions"></div>
+        <div class="npc-dialogue">
+          <div class="npc-name">Elara the Brewmaster</div>
+          <div class="npc-quote" id="quote-potions">"Potions to soothe your wounds or empower your strikes."</div>
+        </div>
+      </div>
+      <button class="btn-action" style="width:100%; margin-bottom: 8px;">Buy Health Potion (30G) - Coming Soon</button>
+      <button class="btn-action" style="width:100%;">Buy Power Potion (30G) - Coming Soon</button>
+    </div>
+  </div>
+
+  <!-- NPC: Quest Board -->
+  <div class="game-modal" id="modal-quests">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('modal-quests')">[X]</span>
+      <h2 class="modal-title">Daily Quests</h2>
+      <div id="quest-list" class="shop-list"></div>
+    </div>
+  </div>
+
+  <!-- NPC: Transmuter -->
+  <div class="game-modal" id="modal-transmuter">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('modal-transmuter')">[X]</span>
+      <div class="cutscene-header">
+        <div class="npc-art" id="art-transmuter"></div>
+        <div class="npc-dialogue">
+          <div class="npc-name">Zephyrus the Alchemist</div>
+          <div class="npc-quote" id="quote-transmuter">"Combine the old to create the new."</div>
+        </div>
+      </div>
+      <div class="fusion-chamber">
+        <div style="display:flex; gap:8px; justify-content:center; margin:15px 0;">
+          <button class="btn-action" id="btn-fuse-slot-1-modal">Slot 1</button>
+          <button class="btn-action" id="btn-fuse-slot-2-modal">Slot 2</button>
+        </div>
+        <div class="fusion-slots">
+          <div class="fusion-slot" id="fuse-1">Slot 1</div>
+          <div class="fusion-slot" id="fuse-2">Slot 2</div>
+        </div>
+        <button class="btn-primary" id="btn-fuse-action">Transmute</button>
+        <div class="fusion-result" id="fusion-result-label"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lobby & Quick Run Modals -->
+  <div class="game-modal" id="modal-lobby">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('modal-lobby')">[X]</span>
+      <h2 class="modal-title" id="lobby-title">Party Lobby</h2>
+      
+      <div id="lobby-host-controls" style="display:none; background:#09060f; border:3px solid #33274a; padding:10px; margin-bottom:15px;">
+        <div style="font-family:var(--font-title); color:var(--cyan); margin-bottom:10px;">⭐ Host Controls</div>
+        <div class="input-group">
+          <label>Starting Floor Checkpoint</label>
+          <select id="lobby-floor-select"></select>
+        </div>
+        <div class="input-group">
+          <label>Max Players</label>
+          <select id="lobby-max-players">
+            <option value="2">2 Players</option>
+            <option value="3">3 Players</option>
+            <option value="4" selected>4 Players</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="input-group" id="lobby-guest-floor-display" style="display:none;">
+        <label>Selected Floor:</label>
+        <span id="lobby-guest-floor" style="color:var(--gold); font-size:1.1rem;">Floor 1</span>
+      </div>
+
+      <div class="party-list" id="modal-party-list" style="margin-bottom: 20px;"></div>
+      
+      <button class="btn-primary" id="btn-lobby-climb-start" style="display:none;">Start Instance</button>
+      <div id="lobby-waiting-msg" style="display:none; color:var(--cyan); text-align:center; font-family:var(--font-title); font-size:0.6rem; animation: pulse 1s infinite alternate;">Waiting for Host to start...</div>
+    </div>
+  </div>
+  
+  <div class="game-modal" id="modal-quick">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('modal-quick')">[X]</span>
+      <h2 class="modal-title">Solo Quick Run</h2>
+      <div class="input-group">
+        <label>Select Starting Floor Checkpoint</label>
+        <select id="quick-floor-select"></select>
+      </div>
+      <button class="btn-primary" id="btn-quick-climb-start">Start Solo Instance</button>
+    </div>
+  </div>
+
+  <script src="client.js"></script>
+</body>
+</html>
